@@ -1,3 +1,4 @@
+using Dalamud.Game.Text;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
@@ -10,7 +11,20 @@ namespace SSMinionBoradcast.Windows
 {
     public class ConfigWindow : Window, IDisposable
     {
-        public ConfigWindow() : base("SSMinionBoradcast设置") { }
+        public ConfigWindow() : base("SSMinionBoradcast设置")
+        {
+            var count = 0;
+            foreach (var item in Enum.GetValues(typeof(SeIconChar)))
+            {
+                SeIconChar += $"{((SeIconChar)(int)item).ToIconChar()}";
+                count++;
+
+                if (count % 20 == 0)
+                {
+                    SeIconChar += Environment.NewLine;
+                }
+            }
+        }
 
         public void Dispose()
         {
@@ -21,6 +35,7 @@ namespace SSMinionBoradcast.Windows
         private static string EditMacro = string.Empty;
         private static string NewMacro = string.Empty;
         private bool showError = false;
+        private static string SeIconChar = string.Empty;
 
         public override void Draw()
         {
@@ -130,6 +145,9 @@ namespace SSMinionBoradcast.Windows
             {
                 ImGui.TextColored(ImGuiColors.DalamudRed, "宏必须包含<flag1-4>四个占位符！");
             }
+            ImGui.Separator();
+            ImGui.Text("游戏内特殊标志");
+            ImGui.InputTextMultiline("", ref SeIconChar, (uint)SeIconChar.Length, new System.Numerics.Vector2(-1, -1), ImGuiInputTextFlags.ReadOnly | ImGuiInputTextFlags.CallbackResize);
 #if DEBUG
             if (ImGui.CollapsingHeader("Debug"))
             {

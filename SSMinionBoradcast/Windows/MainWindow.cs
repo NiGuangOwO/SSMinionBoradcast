@@ -56,5 +56,11 @@ public class MainWindow : Window, IDisposable
         }
         if (Data.isBoradcasting || Plugin.TaskManager.IsBusy)
             ImGui.TextColored(ImGuiColors.HealerGreen, $"当前待发送宏的数量:{Plugin.TaskManager.NumQueuedTasks}");
+
+        ImGui.Text("当前宏列表");
+        foreach (var item in Plugin.Configuration.Macro)
+        {
+            ImGui.Text($"{item}");
+        }
     }
 }
