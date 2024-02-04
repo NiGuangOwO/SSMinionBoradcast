@@ -25,18 +25,14 @@ namespace SSMinionBoradcast
             ECommonsMain.Init(pluginInterface, this);
             Configuration = Svc.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             Configuration.Initialize(Svc.PluginInterface);
-
             TaskManager = new();
-
             ConfigWindow = new();
             MainWindow = new();
             WindowSystem.AddWindow(ConfigWindow);
             WindowSystem.AddWindow(MainWindow);
-
             Boradcast = new();
             CoordsToMapLink = new();
             CoordsToMapLink.Enable();
-
             Svc.PluginInterface.UiBuilder.Draw += DrawUI;
             Svc.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;
         }
@@ -45,14 +41,11 @@ namespace SSMinionBoradcast
         {
             Svc.PluginInterface.UiBuilder.Draw -= DrawUI;
             Svc.PluginInterface.UiBuilder.OpenConfigUi -= DrawConfigUI;
-
             TaskManager.Abort();
             WindowSystem.RemoveAllWindows();
             MainWindow.Dispose();
-
             Boradcast.Dispose();
             CoordsToMapLink.Dispose();
-
             ECommonsMain.Dispose();
         }
 

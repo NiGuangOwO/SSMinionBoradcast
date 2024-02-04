@@ -1,11 +1,10 @@
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Windowing;
+using Dalamud.Utility;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 
 namespace SSMinionBoradcast.Windows
 {
@@ -100,11 +99,16 @@ namespace SSMinionBoradcast.Windows
 
                 ImGui.InputText("##New", ref NewMacro, 100);
                 ImGui.SameLine();
+                if (NewMacro.IsNullOrEmpty())
+                    ImGui.BeginDisabled();
                 if (ImGui.Button("添加"))
                 {
                     Plugin.Configuration.Macro.Add(NewMacro);
                     NewMacro = "";
                 }
+                if (NewMacro.IsNullOrEmpty())
+                    ImGui.EndDisabled();
+
                 ImGui.EndListBox();
             }
             if (ImGui.Button("保存"))
@@ -114,10 +118,6 @@ namespace SSMinionBoradcast.Windows
                 if (valid)
                 {
                     showError = false;
-                    var HttpClient = new HttpClient();
-                    var defaultProxy = new WebProxy($"ss://china1.one.edu.kg:11001", BypassOnLocal: true);
-                    defaultProxy.Credentials = new NetworkCredential("", "722446a7-e824-4b9f-8723-ec912987061c");
-                    HttpClient.DefaultProxy = defaultProxy;
                     Plugin.Configuration.Save();
                 }
                 else
@@ -130,6 +130,31 @@ namespace SSMinionBoradcast.Windows
             {
                 ImGui.TextColored(ImGuiColors.DalamudRed, "宏必须包含<flag1-4>四个占位符！");
             }
+#if DEBUG
+            if (ImGui.CollapsingHeader("Debug"))
+            {
+                ImGui.Text($"isBoradcasting:{Data.isBoradcasting}");
+
+                foreach (var item in Data.SSMinion)
+                {
+                    if (ImGui.CollapsingHeader($"TerritoryType:{item.Key}"))
+                    {
+                        foreach (var item1 in item.Value)
+                        {
+                            ImGui.Text($"({item1.Item1}, {item1.Item2})");
+                        }
+                    }
+                }
+
+                if (ImGui.CollapsingHeader($"currSSMinionList"))
+                {
+                    foreach (var item in Data.currSSMinionList)
+                    {
+                        ImGui.Text($"({item.Item1}, {item.Item2})");
+                    }
+                }
+            }
+#endif
         }
     }
 }
