@@ -40,9 +40,12 @@ namespace SSMinionBoradcast
 
         public static void ChatGui_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled)
         {
-            if (type == XivChatType.SystemMessage && message.TextValue == "特殊恶名精英的手下开始了侦察活动......")
+            if ((int)type == 2105 && message.TextValue.Contains("特殊恶名精英的手下开始了侦察活动"))
             {
-                ProcessData();
+                if (Plugin.Configuration.AutoBoradcast)
+                {
+                    ProcessData();
+                }
             }
             //if (type == XivChatType.Echo && message.TextValue == "test")
             //{
@@ -50,7 +53,7 @@ namespace SSMinionBoradcast
             //}
         }
 
-        public static unsafe void ProcessData(bool manual = false)
+        public static unsafe void ProcessData()
         {
             Data.currMacro.Clear();
             if (Data.currSSMinionList != null && Data.currSSMinionList.Count != 0)
@@ -68,12 +71,8 @@ namespace SSMinionBoradcast
                 {
                     Data.currMacro.Add(ProcessMacro(macro, waypoint));
                 }
-                if (Plugin.Configuration.AutoBoradcast || manual)
-                {
-                    SendMessage(Data.currMacro);
-                }
+                SendMessage(Data.currMacro);
             }
-
         }
 
         public static async void SendMessage(List<string> macro)
