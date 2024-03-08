@@ -1,7 +1,9 @@
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Interface.Colors;
+using Dalamud.Interface.Internal.Notifications;
 using Dalamud.Interface.Windowing;
+using ECommons.Automation;
 using ECommons.DalamudServices;
 using ImGuiNET;
 using System;
@@ -29,7 +31,7 @@ public class MainWindow : Window, IDisposable
         Svc.ClientState.TerritoryChanged -= ClientState_TerritoryChanged;
     }
 
-    private void ClientState_TerritoryChanged(object? sender, ushort e)
+    private void ClientState_TerritoryChanged(ushort e)
     {
         IsOpen = false;
     }
@@ -46,24 +48,20 @@ public class MainWindow : Window, IDisposable
     {
         ImGui.TextColored(ImGuiColors.DalamudYellow, "特殊恶名精英的手下开始了侦察活动");
 
-        if (Data.isBoradcasting || Plugin.TaskManager.IsBusy)
-            ImGui.BeginDisabled();
         if (ImGui.Button("全图广播"))
         {
+            Svc.PluginInterface.UiBuilder.AddNotification("开始发送喊话宏", "SSMinionBoradcast", NotificationType.Success);
+            Svc.Chat.Print("[SSMinionBoradcast] 开始发送喊话宏");
             Boradcast.ProcessData();
         }
-        if (Data.isBoradcasting || Plugin.TaskManager.IsBusy)
-            ImGui.EndDisabled();
 
         ImGui.SameLine();
         if (ImGui.Button("中止喊话"))
         {
-            Data.isBoradcasting = false;
-            Plugin.TaskManager.Abort();
+            Chat.Instance.SendMessage("/mcancel");
+            Svc.PluginInterface.UiBuilder.AddNotification("已停止执行喊话宏", "SSMinionBoradcast", NotificationType.Warning);
+            Svc.Chat.Print("[SSMinionBoradcast] 已停止执行喊话宏");
         }
-
-        if (Data.isBoradcasting || Plugin.TaskManager.IsBusy)
-            ImGui.TextColored(ImGuiColors.HealerGreen, $"当前待发送宏的数量:{Plugin.TaskManager.NumQueuedTasks}");
 
         ImGui.Separator();
         ImGui.Text("当前宏列表");

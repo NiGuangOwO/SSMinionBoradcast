@@ -26,7 +26,7 @@ namespace SSMinionBoradcast
             }
         }
 
-        private void ClientState_TerritoryChanged(object? sender, ushort e)
+        private void ClientState_TerritoryChanged(ushort e)
         {
             if (Data.SSMinion.TryGetValue(Svc.ClientState.TerritoryType, out var ssminionlist))
             {
@@ -47,25 +47,27 @@ namespace SSMinionBoradcast
                     ProcessData();
                 }
             }
-            //if (type == XivChatType.Echo && message.TextValue == "test")
-            //{
-            //    ProcessData(true);
-            //}
+#if DEBUG
+            if (type == XivChatType.Echo && message.TextValue == "test")
+            {
+                ProcessData();
+            }
+#endif
         }
 
         public static unsafe void ProcessData()
         {
             Data.currMacro.Clear();
-            if (Data.currSSMinionList != null && Data.currSSMinionList.Count != 0)
+            if (Data.currSSMinionList.Any())
             {
                 var mapName = Svc.Data.GetExcelSheet<TerritoryType>()!.GetRow(Svc.ClientState.TerritoryType)!.PlaceName.Value!.Name.RawString;
                 var instance = GetCharacterForInstanceNumber(UIState.Instance()->AreaInstance.Instance);
                 var waypoint = new Dictionary<string, string>
         {
-            {"<flag1>", $"{mapName}{instance} ( {Data.currSSMinionList[0].Item1:F1}  , {Data.currSSMinionList[0].Item2:F1} )"},
-            {"<flag2>", $"{mapName}{instance} ( {Data.currSSMinionList[1].Item1:F1}  , {Data.currSSMinionList[1].Item2:F1} )"},
-            {"<flag3>", $"{mapName}{instance} ( {Data.currSSMinionList[2].Item1:F1}  , {Data.currSSMinionList[2].Item2:F1} )"},
-            {"<flag4>", $"{mapName}{instance} ( {Data.currSSMinionList[3].Item1:F1}  , {Data.currSSMinionList[3].Item2:F1} )"},
+            {"<flag1>", $"{mapName}{instance} ( {Data.currSSMinionList[0].X:F1}  , {Data.currSSMinionList[0].Y:F1} )"},
+            {"<flag2>", $"{mapName}{instance} ( {Data.currSSMinionList[1].X:F1}  , {Data.currSSMinionList[1].Y:F1} )"},
+            {"<flag3>", $"{mapName}{instance} ( {Data.currSSMinionList[2].X:F1}  , {Data.currSSMinionList[2].Y:F1} )"},
+            {"<flag4>", $"{mapName}{instance} ( {Data.currSSMinionList[3].X:F1}  , {Data.currSSMinionList[3].Y:F1} )"},
         };
                 foreach (var macro in Plugin.Configuration.Macro)
                 {
@@ -75,23 +77,10 @@ namespace SSMinionBoradcast
             }
         }
 
-        public static async void SendMessage(List<string> macro)
+        public static void SendMessage(List<string> macro)
         {
-            if (Data.isBoradcasting)
-                return;
-            Data.isBoradcasting = true;
-            foreach (var item in macro)
-            {
-                Plugin.TaskManager.Enqueue(() => Chat.Instance.SendMessage(item));
-                if (item != macro.Last())
-                {
-                    Plugin.TaskManager.DelayNext(2500);
-                }
-                else
-                {
-                    Plugin.TaskManager.Enqueue(() => { Data.isBoradcasting = false; });
-                }
-            }
+            macro.Insert(0, "/mlock");
+            MacroManager.Execute(macro);
         }
 
         private static string GetCharacterForInstanceNumber(int instance)
