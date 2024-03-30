@@ -51,13 +51,7 @@ namespace SSMinionBoradcast.Windows
             ImGui.SameLine();
             if (ImGui.Button("添加模板宏") && Plugin.Configuration.Macro.Count < 8)
             {
-                Plugin.Configuration.Macro.Add("/sh 级恶名精英已触发，小怪请在五分钟内建立仇恨，请在人数足够时再开怪，开怪后请勿拉脱！开怪后请勿拉脱！开怪后请勿拉脱！<wait.2>");
-                Plugin.Configuration.Macro.Add("/sh 本图级恶名精英已触发，请前往以下位置=>击杀前置小怪 <wait.2>");
-                Plugin.Configuration.Macro.Add("/sh ■■■1号■■■<flag1> <wait.2>");
-                Plugin.Configuration.Macro.Add("/sh ■■■2号■■■<flag2> <wait.2>");
-                Plugin.Configuration.Macro.Add("/sh ■■■3号■■■<flag3> <wait.2>");
-                Plugin.Configuration.Macro.Add("/sh ■■■4号■■■<flag4> <wait.2>");
-                Plugin.Configuration.Save();
+                AddTemplateMacro();
             }
 
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
@@ -70,6 +64,7 @@ namespace SSMinionBoradcast.Windows
                         if (ImGui.Button($"删除##{i}"))
                         {
                             Plugin.Configuration.Macro.RemoveAt(i);
+                            continue;
                         }
                         ImGui.SameLine();
 
@@ -188,6 +183,17 @@ namespace SSMinionBoradcast.Windows
                 }
             }
 #endif
+        }
+
+        public static void AddTemplateMacro()
+        {
+            Plugin.Configuration.Macro.Add("/sh 级恶名精英已触发，小怪请在五分钟内建立仇恨，请在人数足够时再开怪，开怪后请勿拉脱！开怪后请勿拉脱！开怪后请勿拉脱！<wait.2>");
+            Plugin.Configuration.Macro.Add("/sh 本图级恶名精英已触发，请前往以下位置=>击杀前置小怪 <wait.2>");
+            Plugin.Configuration.Macro.Add("/sh ■■■1号■■■<flag1> <wait.2>");
+            Plugin.Configuration.Macro.Add("/sh ■■■2号■■■<flag2> <wait.2>");
+            Plugin.Configuration.Macro.Add("/sh ■■■3号■■■<flag3> <wait.2>");
+            Plugin.Configuration.Macro.Add("/sh ■■■4号■■■<flag4> <wait.2>");
+            Plugin.Configuration.Save();
         }
     }
 }

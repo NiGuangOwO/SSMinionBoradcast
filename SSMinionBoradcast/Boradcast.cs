@@ -1,64 +1,28 @@
 using Dalamud.Game.Text;
-using Dalamud.Game.Text.SeStringHandling;
 using ECommons.Automation;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.GeneratedSheets;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace SSMinionBoradcast
 {
-    public partial class Boradcast : IDisposable
+    public static class Boradcast
     {
-        public Boradcast()
-        {
-            Svc.Chat.ChatMessage += ChatGui_OnChatMessage;
-            Svc.ClientState.TerritoryChanged += ClientState_TerritoryChanged;
-            if (Svc.ClientState.LocalPlayer is not null)
-            {
-                if (Data.SSMinion.TryGetValue(Svc.ClientState.TerritoryType, out var ssminionlist))
-                {
-                    Data.currSSMinionList = ssminionlist;
-                }
-            }
-        }
-
-        private void ClientState_TerritoryChanged(ushort e)
-        {
-            if (Data.SSMinion.TryGetValue(Svc.ClientState.TerritoryType, out var ssminionlist))
-            {
-                Data.currSSMinionList = ssminionlist;
-            }
-            else
-            {
-                Data.currSSMinionList.Clear();
-            }
-        }
-
-        public static void ChatGui_OnChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled)
-        {
-            if ((int)type == 2105 && message.TextValue.Contains("特殊恶名精英的手下开始了侦察活动"))
-            {
-                if (Plugin.Configuration.AutoBoradcast)
-                {
-                    ProcessData();
-                }
-            }
-#if DEBUG
-            if (type == XivChatType.Echo && message.TextValue == "test")
-            {
-                ProcessData();
-            }
-#endif
-        }
-
         public static unsafe void ProcessData()
         {
+            Svc.Log.Info("ProcessData...");
             Data.currMacro.Clear();
-            if (Data.currSSMinionList.Any())
+
+            if (Plugin.Configuration.Macro.Count == 0)
+            {
+                Svc.Chat.PrintError("SS前置小怪播报宏为空，请进入插件设置页添加！");
+                return;
+            }
+
+            if (Data.currSSMinionList.Count != 0)
             {
                 var mapName = Svc.Data.GetExcelSheet<TerritoryType>()!.GetRow(Svc.ClientState.TerritoryType)!.PlaceName.Value!.Name.RawString;
                 var instance = GetCharacterForInstanceNumber(UIState.Instance()->AreaInstance.Instance);
@@ -73,14 +37,10 @@ namespace SSMinionBoradcast
                 {
                     Data.currMacro.Add(ProcessMacro(macro, waypoint));
                 }
+
+                Svc.Log.Info("SendMessage...");
                 SendMessage(Data.currMacro);
             }
-        }
-
-        public static void SendMessage(List<string> macro)
-        {
-            macro.Insert(0, "/mlock");
-            MacroManager.Execute(macro);
         }
 
         private static string GetCharacterForInstanceNumber(int instance)
@@ -97,12 +57,12 @@ namespace SSMinionBoradcast
             var result = regex.Replace(macro, match => waypoint[match.Value]);
             return result;
         }
-
-        public void Dispose()
+        public static void SendMessage(List<string> macro)
         {
-            GC.SuppressFinalize(this);
-            Svc.Chat.ChatMessage -= ChatGui_OnChatMessage;
-            Svc.ClientState.TerritoryChanged -= ClientState_TerritoryChanged;
+            Chat.Instance.SendMessage("/mcancel");
+            macro.Insert(0, "/mlock");
+            Svc.Log.Info("ExecuteMacro...");
+            MacroManager.Execute(macro);
         }
     }
 }

@@ -88,7 +88,7 @@ namespace SSMinionBoradcast
                     if (historyCoordinates.TryGetValue(historyKey, out var history))
                     {
                         (territoryId, mapId, rawX, rawY) = history;
-                        PluginLog.Debug($"recall {historyKey} => {history}");
+                        //PluginLog.Debug($"recall {historyKey} => {history}");
                     }
                     else
                     {
@@ -107,7 +107,7 @@ namespace SSMinionBoradcast
                         }
                         history = (territoryId, mapId, rawX, rawY);
                         historyCoordinates[historyKey] = history;
-                        PluginLog.Debug($"generate {historyKey} => {history}");
+                        //PluginLog.Debug($"generate {historyKey} => {history}");
                     }
 
                     var newPayloads = new List<Payload>();
@@ -171,7 +171,7 @@ namespace SSMinionBoradcast
                     }
                     var history = (territoryId, mapId, payload.RawX, payload.RawY);
                     historyCoordinates[historyKey] = history;
-                    PluginLog.Debug($"memorize {historyKey} => {history}");
+                    //PluginLog.Debug($"memorize {historyKey} => {history}");
                     //PluginLog.Log(BitConverter.ToString(payload.Encode()));
                     //PluginLog.Log(BitConverter.ToString(payload.Encode(true)));
                 }

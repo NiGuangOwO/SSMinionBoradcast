@@ -33,6 +33,7 @@ namespace SSMinionBoradcast
                         //黑风海
             {818,new List<Position>{ new(8,7), new(26,9.5), new(38,14), new(33.7,30.1) } },
 
+                        //无人岛test
             {1055,new List<Position>{new(24,8.8), new(35.5,18), new(8.8,22), new(25.5,33.5) } },
         };
 
