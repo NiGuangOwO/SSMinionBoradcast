@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace SSMinionBoradcast.Windows
 {
-    public class ConfigWindow : Window, IDisposable
+    public class ConfigWindow : Window
     {
         public ConfigWindow() : base("SSMinionBoradcast设置")
         {
@@ -26,11 +26,6 @@ namespace SSMinionBoradcast.Windows
                     SeIconChar += Environment.NewLine;
                 }
             }
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
         }
 
         private static int SelectedItemIndex = -1;

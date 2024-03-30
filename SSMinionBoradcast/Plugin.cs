@@ -23,13 +23,16 @@ namespace SSMinionBoradcast
             ECommonsMain.Init(pluginInterface, this);
             Configuration = Svc.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             Configuration.Initialize(Svc.PluginInterface);
+
             ConfigWindow = new();
             MainWindow = new();
             WindowSystem.AddWindow(ConfigWindow);
             WindowSystem.AddWindow(MainWindow);
+
             CoordsToMapLink = new();
             CoordsToMapLink.Enable();
             Events.Enable();
+
             Svc.PluginInterface.UiBuilder.Draw += DrawUI;
             Svc.PluginInterface.UiBuilder.OpenMainUi += DrawConfigUI;
             Svc.PluginInterface.UiBuilder.OpenConfigUi += DrawConfigUI;

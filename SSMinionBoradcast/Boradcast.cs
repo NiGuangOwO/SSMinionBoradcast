@@ -15,13 +15,6 @@ namespace SSMinionBoradcast
         {
             Svc.Log.Info("ProcessData...");
             Data.currMacro.Clear();
-
-            if (Plugin.Configuration.Macro.Count == 0)
-            {
-                Svc.Chat.PrintError("SS前置小怪播报宏为空，请进入插件设置页添加！");
-                return;
-            }
-
             if (Data.currSSMinionList.Count != 0)
             {
                 var mapName = Svc.Data.GetExcelSheet<TerritoryType>()!.GetRow(Svc.ClientState.TerritoryType)!.PlaceName.Value!.Name.RawString;
@@ -57,6 +50,7 @@ namespace SSMinionBoradcast
             var result = regex.Replace(macro, match => waypoint[match.Value]);
             return result;
         }
+
         public static void SendMessage(List<string> macro)
         {
             Chat.Instance.SendMessage("/mcancel");
