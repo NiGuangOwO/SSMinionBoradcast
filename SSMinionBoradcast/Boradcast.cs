@@ -1,4 +1,5 @@
 using Dalamud.Game.Text;
+using Dalamud.Interface.Internal.Notifications;
 using ECommons.Automation;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -54,9 +55,12 @@ namespace SSMinionBoradcast
         public static void SendMessage(List<string> macro)
         {
             Chat.Instance.SendMessage("/mcancel");
+
             macro.Insert(0, "/mlock");
-            Svc.Log.Info("ExecuteMacro...");
             MacroManager.Execute(macro);
+
+            Svc.Log.Info("ExecuteMacro...");
+            Svc.PluginInterface.UiBuilder.AddNotification("开始发送喊话宏", "SSMinionBoradcast", NotificationType.Success);
         }
     }
 }

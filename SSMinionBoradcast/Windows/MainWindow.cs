@@ -31,7 +31,6 @@ public class MainWindow : Window
             ImGui.BeginDisabled();
         if (ImGui.Button("全图广播"))
         {
-            Svc.PluginInterface.UiBuilder.AddNotification("开始发送喊话宏", "SSMinionBoradcast", NotificationType.Success);
             Boradcast.ProcessData();
             lastButtonClickTime = DateTime.Now;
         }
@@ -47,7 +46,7 @@ public class MainWindow : Window
 
         ImGui.Separator();
         ImGui.Text("当前宏列表");
-        ImGui.BeginChild("");
+        ImGui.BeginChild("##MainWindow当前宏列表");
         foreach (var item in Plugin.Configuration.Macro)
         {
             ImGui.Text($"{item}");
