@@ -72,7 +72,7 @@ namespace SSMinionBoradcast.Windows
                     }
                     else
                     {
-                        ImGui.InputText($"##Edit{i}", ref EditMacro, 200);
+                        ImGui.InputText($"##Edit{i}", ref EditMacro, 1000);
                         ImGui.SameLine();
 
                         if (i > 0)
@@ -104,16 +104,20 @@ namespace SSMinionBoradcast.Windows
                             SelectedItemIndex = -1;
                             EditMacro = "";
                         }
+
+                        ImGui.SameLine();
+
+                        ImGui.Text($"{EditMacro.Length}");
                     }
                 }
                 if (Plugin.Configuration.Macro.Count < 14)
                 {
-                    ImGui.InputText("##New", ref NewMacro, 100);
+                    ImGui.InputText("##New", ref NewMacro, 1000);
                     ImGui.SameLine();
 
                     if (NewMacro.IsNullOrEmpty())
                         ImGui.BeginDisabled();
-                    if (ImGui.Button("添加") && Plugin.Configuration.Macro.Count < 14)
+                    if (ImGui.Button("添加"))
                     {
                         Plugin.Configuration.Macro.Add(NewMacro);
                         NewMacro = "";
@@ -166,14 +170,6 @@ namespace SSMinionBoradcast.Windows
                         {
                             ImGui.Text($"({item1.X}, {item1.Y})");
                         }
-                    }
-                }
-
-                if (ImGui.CollapsingHeader($"currSSMinionList"))
-                {
-                    foreach (var item in Data.currSSMinionList)
-                    {
-                        ImGui.Text($"({item.X}, {item.Y})");
                     }
                 }
             }

@@ -47,7 +47,7 @@ public class MainWindow : Window
         ImGui.Separator();
         ImGui.Text("当前宏列表");
         ImGui.BeginChild("##MainWindow当前宏列表");
-        foreach (var item in Plugin.Configuration.Macro)
+        foreach (var item in Data.currMacro)
         {
             ImGui.Text($"{item}");
         }

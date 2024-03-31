@@ -37,8 +37,6 @@ namespace SSMinionBoradcast
             {1055,new List<Position>{new(24,8.8), new(35.5,18), new(8.8,22), new(25.5,33.5) } },
         };
 
-        public static List<Position> currSSMinionList { get; set; } = [];
-
         public static Dictionary<string, (uint, uint)> maps { get; set; } = [];
 
         public static List<string> currMacro { get; set; } = [];

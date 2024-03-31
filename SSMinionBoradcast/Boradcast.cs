@@ -16,16 +16,16 @@ namespace SSMinionBoradcast
         {
             Svc.Log.Info("ProcessData...");
             Data.currMacro.Clear();
-            if (Data.currSSMinionList.Count != 0)
+            if (Data.SSMinion.TryGetValue(Svc.ClientState.TerritoryType, out var ssminionlist))
             {
                 var mapName = Svc.Data.GetExcelSheet<TerritoryType>()!.GetRow(Svc.ClientState.TerritoryType)!.PlaceName.Value!.Name.RawString;
                 var instance = GetCharacterForInstanceNumber(UIState.Instance()->AreaInstance.Instance);
                 var waypoint = new Dictionary<string, string>
         {
-            {"<flag1>", $"{mapName}{instance} ( {Data.currSSMinionList[0].X:F1}  , {Data.currSSMinionList[0].Y:F1} )"},
-            {"<flag2>", $"{mapName}{instance} ( {Data.currSSMinionList[1].X:F1}  , {Data.currSSMinionList[1].Y:F1} )"},
-            {"<flag3>", $"{mapName}{instance} ( {Data.currSSMinionList[2].X:F1}  , {Data.currSSMinionList[2].Y:F1} )"},
-            {"<flag4>", $"{mapName}{instance} ( {Data.currSSMinionList[3].X:F1}  , {Data.currSSMinionList[3].Y:F1} )"},
+            {"<flag1>", $"{mapName}{instance} ( {ssminionlist[0].X:F1}  , {ssminionlist[0].Y:F1} )"},
+            {"<flag2>", $"{mapName}{instance} ( {ssminionlist[1].X:F1}  , {ssminionlist[1].Y:F1} )"},
+            {"<flag3>", $"{mapName}{instance} ( {ssminionlist[2].X:F1}  , {ssminionlist[2].Y:F1} )"},
+            {"<flag4>", $"{mapName}{instance} ( {ssminionlist[3].X:F1}  , {ssminionlist[3].Y:F1} )"},
         };
                 foreach (var macro in Plugin.Configuration.Macro)
                 {
@@ -34,6 +34,10 @@ namespace SSMinionBoradcast
 
                 Svc.Log.Info("SendMessage...");
                 SendMessage(Data.currMacro);
+            }
+            else
+            {
+                Svc.Log.Error("获取当前地图SS小怪点位失败！");
             }
         }
 
