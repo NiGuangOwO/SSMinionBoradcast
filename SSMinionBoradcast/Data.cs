@@ -10,7 +10,7 @@ namespace SSMinionBoradcast
                         //迷津
             {956,new List<Position>{new(24,8.8), new(35.5,18), new(8.8,22), new(25.5,33.5) } },
                         //萨维奈岛
-            {957,new List<Position>{new(10,14.6), new(22.2,10), new(16,30), new(32.6,26) } },
+            {957,new List<Position>{new(12.0,16.1), new(22.8,10.2), new(16.7,29.3), new(33.5,24.6) } },
                         //加雷马
             {958,new List<Position>{ new(17.4,9.8), new(32.9,9), new(21.8,33), new(33,28.7) } },
                         //叹息海
