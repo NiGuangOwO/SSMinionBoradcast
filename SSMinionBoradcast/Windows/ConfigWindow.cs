@@ -143,7 +143,12 @@ namespace SSMinionBoradcast.Windows
                 {
                     showError = false;
                     Plugin.Configuration.Save();
-                    Svc.PluginInterface.UiBuilder.AddNotification("配置已保存", "SSMinionBoradcast", NotificationType.Success);
+                    Svc.NotificationManager.AddNotification(new Dalamud.Interface.ImGuiNotification.Notification()
+                    {
+                        Content = "配置已保存",
+                        Title = "SSMinionBoradcast",
+                        Type = NotificationType.Success
+                    });
                 }
                 else
                 {

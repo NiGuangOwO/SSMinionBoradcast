@@ -41,7 +41,12 @@ public class MainWindow : Window
         if (ImGui.Button("中止喊话"))
         {
             Chat.Instance.SendMessage("/mcancel");
-            Svc.PluginInterface.UiBuilder.AddNotification("已停止执行喊话宏", "SSMinionBoradcast", NotificationType.Warning);
+            Svc.NotificationManager.AddNotification(new Dalamud.Interface.ImGuiNotification.Notification()
+            {
+                Title = "SSMinionBoradcast",
+                Content = "已停止执行喊话宏",
+                Type = NotificationType.Warning
+            });
         }
 
         ImGui.Separator();

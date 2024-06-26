@@ -14,16 +14,16 @@ namespace SSMinionBoradcast
         public List<string> Macro = [];
 
         [NonSerialized]
-        private DalamudPluginInterface? PluginInterface;
+        private DalamudPluginInterface? pluginInterface;
 
         public void Initialize(DalamudPluginInterface pluginInterface)
         {
-            PluginInterface = pluginInterface;
+            this.pluginInterface = pluginInterface;
         }
 
         public void Save()
         {
-            PluginInterface!.SavePluginConfig(this);
+            pluginInterface!.SavePluginConfig(this);
         }
     }
 }

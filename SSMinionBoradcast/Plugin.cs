@@ -13,7 +13,7 @@ namespace SSMinionBoradcast
         public Configuration Configuration;
         public WindowSystem WindowSystem = new("SSMinionBoradcast");
 
-        private ConfigWindow ConfigWindow;
+        internal ConfigWindow ConfigWindow;
         internal MainWindow MainWindow;
         public CoordsToMapLink CoordsToMapLink;
 

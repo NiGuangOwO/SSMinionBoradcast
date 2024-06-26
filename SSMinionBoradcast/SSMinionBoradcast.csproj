@@ -5,8 +5,8 @@
   <PropertyGroup>
     <Authors>NiGuangOwO</Authors>
     <Company>moewcorp</Company>
-    <Version>0.0.0.2</Version>
-    <Description>A sample plugin.</Description>
+    <Version>0.0.0.3</Version>
+    <Description>简单的播报SS前置小怪的小工具</Description>
     <Copyright></Copyright>
     <PackageProjectUrl>https://github.com/NiGuangOwO/SSMinionBoradcast</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>

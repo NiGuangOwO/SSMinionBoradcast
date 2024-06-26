@@ -98,7 +98,7 @@ namespace SSMinionBoradcast
                             continue;
                         }
                         (territoryId, mapId) = mapInfo;
-                        var map = Svc.Data.GetExcelSheet<Map>().GetRow(mapId);
+                        var map = Svc.Data.GetExcelSheet<Map>()!.GetRow(mapId);
                         rawX = GenerateRawPosition(float.Parse(match.Groups["x"].Value), map.OffsetX, map.SizeFactor);
                         rawY = GenerateRawPosition(float.Parse(match.Groups["y"].Value), map.OffsetY, map.SizeFactor);
                         if (match.Groups["instance"].Value != "")

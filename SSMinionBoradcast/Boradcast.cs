@@ -64,7 +64,12 @@ namespace SSMinionBoradcast
             MacroManager.Execute(macro);
 
             Svc.Log.Info("ExecuteMacro...");
-            Svc.PluginInterface.UiBuilder.AddNotification("开始发送喊话宏", "SSMinionBoradcast", NotificationType.Success);
+            Svc.NotificationManager.AddNotification(new Dalamud.Interface.ImGuiNotification.Notification()
+            {
+                Title = "SSMinionBoradcast",
+                Content = "开始发送喊话宏",
+                Type = NotificationType.Success
+            });
         }
     }
 }
