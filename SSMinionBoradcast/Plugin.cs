@@ -8,7 +8,6 @@ namespace SSMinionBoradcast
 {
     public sealed class SSMinionBoradcast : IDalamudPlugin
     {
-        public static string Name => "SSMinionBoradcast";
         public static SSMinionBoradcast Plugin;
         public Configuration Configuration;
         public WindowSystem WindowSystem = new("SSMinionBoradcast");
@@ -17,12 +16,11 @@ namespace SSMinionBoradcast
         internal MainWindow MainWindow;
         public CoordsToMapLink CoordsToMapLink;
 
-        public SSMinionBoradcast(DalamudPluginInterface pluginInterface)
+        public SSMinionBoradcast(IDalamudPluginInterface pluginInterface)
         {
             Plugin = this;
             ECommonsMain.Init(pluginInterface, this);
             Configuration = Svc.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-            Configuration.Initialize(Svc.PluginInterface);
 
             ConfigWindow = new();
             MainWindow = new();

@@ -1,5 +1,5 @@
 using Dalamud.Configuration;
-using Dalamud.Plugin;
+using ECommons.DalamudServices;
 using System;
 using System.Collections.Generic;
 
@@ -13,17 +13,9 @@ namespace SSMinionBoradcast
         public bool AutoBoradcast = false;
         public List<string> Macro = [];
 
-        [NonSerialized]
-        private DalamudPluginInterface? pluginInterface;
-
-        public void Initialize(DalamudPluginInterface pluginInterface)
-        {
-            this.pluginInterface = pluginInterface;
-        }
-
         public void Save()
         {
-            pluginInterface!.SavePluginConfig(this);
+            Svc.PluginInterface.SavePluginConfig(this);
         }
     }
 }

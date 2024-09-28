@@ -1,6 +1,6 @@
 using Dalamud.Game.Text;
 using Dalamud.Interface.Colors;
-using Dalamud.Interface.Internal.Notifications;
+using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 using ECommons.DalamudServices;
@@ -143,7 +143,7 @@ namespace SSMinionBoradcast.Windows
                 {
                     showError = false;
                     Plugin.Configuration.Save();
-                    Svc.NotificationManager.AddNotification(new Dalamud.Interface.ImGuiNotification.Notification()
+                    Svc.NotificationManager.AddNotification(new Notification()
                     {
                         Content = "配置已保存",
                         Title = "SSMinionBoradcast",

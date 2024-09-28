@@ -1,5 +1,5 @@
 using Dalamud.Interface.Colors;
-using Dalamud.Interface.Internal.Notifications;
+using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
 using ECommons.Automation;
 using ECommons.DalamudServices;
@@ -11,7 +11,7 @@ namespace SSMinionBoradcast.Windows;
 
 public class MainWindow : Window
 {
-    public MainWindow() : base("SS前置小怪播报", ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize)
+    public MainWindow() : base("SS前置小怪播报", ImGuiWindowFlags.NoCollapse)
     {
         SizeConstraints = new WindowSizeConstraints
         {
@@ -31,7 +31,7 @@ public class MainWindow : Window
             ImGui.BeginDisabled();
         if (ImGui.Button("全图广播"))
         {
-            Boradcast.ProcessData();
+            Boradcast.ProcessData(true);
             lastButtonClickTime = DateTime.Now;
         }
         if ((DateTime.Now - lastButtonClickTime).TotalSeconds < 3)
@@ -41,7 +41,7 @@ public class MainWindow : Window
         if (ImGui.Button("中止喊话"))
         {
             Chat.Instance.SendMessage("/mcancel");
-            Svc.NotificationManager.AddNotification(new Dalamud.Interface.ImGuiNotification.Notification()
+            Svc.NotificationManager.AddNotification(new Notification()
             {
                 Title = "SSMinionBoradcast",
                 Content = "已停止执行喊话宏",

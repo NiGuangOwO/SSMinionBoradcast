@@ -1,5 +1,5 @@
 using Dalamud.Game.Text;
-using Dalamud.Interface.Internal.Notifications;
+using Dalamud.Interface.ImGuiNotification;
 using ECommons.Automation;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -12,14 +12,13 @@ namespace SSMinionBoradcast
 {
     public static class Boradcast
     {
-        public static unsafe void ProcessData()
+        public static unsafe void ProcessData(bool send)
         {
-            Svc.Log.Info("ProcessData...");
             Data.currMacro.Clear();
             if (Data.SSMinion.TryGetValue(Svc.ClientState.TerritoryType, out var ssminionlist))
             {
                 var mapName = Svc.Data.GetExcelSheet<TerritoryType>()!.GetRow(Svc.ClientState.TerritoryType)!.PlaceName.Value!.Name.RawString;
-                var instance = GetCharacterForInstanceNumber(UIState.Instance()->AreaInstance.Instance);
+                var instance = GetCharacterForInstanceNumber(UIState.Instance()->PublicInstance.InstanceId);
                 var waypoint = new Dictionary<string, string>
         {
             {"<flag1>", $"{mapName}{instance} ( {ssminionlist[0].X:F1}  , {ssminionlist[0].Y:F1} )"},
@@ -32,8 +31,10 @@ namespace SSMinionBoradcast
                     Data.currMacro.Add(ProcessMacro(macro, waypoint));
                 }
 
-                Svc.Log.Info("SendMessage...");
-                SendMessage(Data.currMacro);
+                if (send)
+                {
+                    SendMessage(Data.currMacro);
+                }
             }
             else
             {
@@ -41,7 +42,7 @@ namespace SSMinionBoradcast
             }
         }
 
-        private static string GetCharacterForInstanceNumber(int instance)
+        private static string GetCharacterForInstanceNumber(uint instance)
         {
             if (instance == 0)
                 return string.Empty;
@@ -62,9 +63,7 @@ namespace SSMinionBoradcast
 
             macro.Insert(0, "/mlock");
             MacroManager.Execute(macro);
-
-            Svc.Log.Info("ExecuteMacro...");
-            Svc.NotificationManager.AddNotification(new Dalamud.Interface.ImGuiNotification.Notification()
+            Svc.NotificationManager.AddNotification(new Notification()
             {
                 Title = "SSMinionBoradcast",
                 Content = "开始发送喊话宏",
