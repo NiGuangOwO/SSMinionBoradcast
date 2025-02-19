@@ -2,8 +2,9 @@ using Dalamud.Game.Text;
 using Dalamud.Interface.ImGuiNotification;
 using ECommons.Automation;
 using ECommons.DalamudServices;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -15,9 +16,9 @@ namespace SSMinionBoradcast
         public static unsafe void ProcessData(bool send)
         {
             Data.currMacro.Clear();
-            if (Data.SSMinion.TryGetValue(Svc.ClientState.TerritoryType, out var ssminionlist))
+            if (Data.SSMinion.TryGetValue(GameMain.Instance()->CurrentTerritoryTypeId, out var ssminionlist))
             {
-                var mapName = Svc.Data.GetExcelSheet<TerritoryType>()!.GetRow(Svc.ClientState.TerritoryType)!.PlaceName.Value!.Name.RawString;
+                var mapName = Svc.Data.GetExcelSheet<TerritoryType>().GetRow(GameMain.Instance()->CurrentTerritoryTypeId).PlaceName.Value.Name.ExtractText();
                 var instance = GetCharacterForInstanceNumber(UIState.Instance()->PublicInstance.InstanceId);
                 var waypoint = new Dictionary<string, string>
         {

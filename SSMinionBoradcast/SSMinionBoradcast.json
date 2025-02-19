@@ -3,5 +3,7 @@
     "Name": "SSMinionBoradcast",
     "Punchline": "简单的播报SS前置小怪的小工具",
     "Description": "简单的播报SS前置小怪的小工具",
-    "Tags": ["SS"]
+    "Tags": [
+        "SS"
+    ]
 }

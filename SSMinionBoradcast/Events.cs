@@ -41,7 +41,6 @@ namespace SSMinionBoradcast
                     Type = NotificationType.Warning
                 });
                 Plugin.MainWindow.IsOpen = true;
-
                 Boradcast.ProcessData(Plugin.Configuration.AutoBoradcast);
             }
         }

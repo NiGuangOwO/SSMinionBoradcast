@@ -5,7 +5,7 @@ namespace SSMinionBoradcast
 {
     internal static class Data
     {
-        public static Dictionary<ushort, Vector2[]> SSMinion { get; } = new()
+        public static Dictionary<uint, Vector2[]> SSMinion { get; } = new()
     {
             {1187,[new(18.3f,17.8f),new(25.7f,13.9f),new(15.5f,28.7f),new(34.7f,28.4f)] }, //奥阔帕恰山
             {1188,[new(16.7f,7.3f),new(33.2f,8.2f),new(15.7f,32.7f),new(29.7f,24.5f)] }, //克扎玛乌卡湿地
@@ -30,7 +30,6 @@ namespace SSMinionBoradcast
 
             {1055,[new(24,8.8f), new(35.5f,18), new(8.8f,22), new(25.5f,33.5f)] }, //无人岛test
         };
-        public static Dictionary<string, (uint, uint)> maps { get; set; } = [];
         public static List<string> currMacro { get; set; } = [];
     }
 }
