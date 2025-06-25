@@ -60,7 +60,7 @@ namespace SSMinionBoradcast
 
         public static void SendMessage(List<string> macro)
         {
-            Chat.Instance.SendMessage("/mcancel");
+            Chat.SendMessage("/mcancel");
 
             macro.Insert(0, "/mlock");
             MacroManager.Execute(macro);
