@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="Dalamud.Plugin.Bootstrap.targets" />
+<Project Sdk="Dalamud.CN.NET.Sdk/12.0.2">
+    <PropertyGroup>
+        <Authors>NiGuangOwO</Authors>
+        <Company>moewcorp</Company>
+        <Version>0.0.0.9</Version>
+        <Description>简单的播报SS前置小怪的小工具</Description>
+        <PackageProjectUrl>https://github.com/NiGuangOwO/SSMinionBoradcast</PackageProjectUrl>
+        <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <Authors>NiGuangOwO</Authors>
-    <Company>moewcorp</Company>
-    <Version>0.0.0.8</Version>
-    <Description>简单的播报SS前置小怪的小工具</Description>
-    <PackageProjectUrl>https://github.com/NiGuangOwO/SSMinionBoradcast</PackageProjectUrl>
-    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ECommons\ECommons\ECommons.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\ECommons\ECommons\ECommons.csproj" />
+    </ItemGroup>
 </Project>
