@@ -1,10 +1,10 @@
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.Text;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 using ECommons.DalamudServices;
-using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -163,7 +163,7 @@ namespace SSMinionBoradcast.Windows
 
             ImGui.Separator();
             ImGui.Text("游戏内特殊标志（可复制）");
-            ImGui.InputTextMultiline("", ref SeIconChar, (uint)SeIconChar.Length, new System.Numerics.Vector2(-1, -1), ImGuiInputTextFlags.ReadOnly | ImGuiInputTextFlags.CallbackResize);
+            ImGui.InputTextMultiline("", ref SeIconChar, SeIconChar.Length, new System.Numerics.Vector2(-1, -1), flags: ImGuiInputTextFlags.ReadOnly | ImGuiInputTextFlags.CallbackResize);
 #if DEBUG
             if (ImGui.CollapsingHeader("Debug"))
             {

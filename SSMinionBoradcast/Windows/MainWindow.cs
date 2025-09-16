@@ -1,9 +1,9 @@
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
 using ECommons.Automation;
 using ECommons.DalamudServices;
-using ImGuiNET;
 using System;
 using System.Numerics;
 
@@ -11,7 +11,7 @@ namespace SSMinionBoradcast.Windows;
 
 public class MainWindow : Window
 {
-    public MainWindow() : base("SS前置小怪播报", ImGuiWindowFlags.NoCollapse)
+    public MainWindow() : base("SS前置小怪播报", flags: ImGuiWindowFlags.NoCollapse)
     {
         SizeConstraints = new WindowSizeConstraints
         {
@@ -40,7 +40,7 @@ public class MainWindow : Window
         ImGui.SameLine();
         if (ImGui.Button("中止喊话"))
         {
-            Chat.Instance.SendMessage("/mcancel");
+            Chat.SendMessage("/mcancel");
             Svc.NotificationManager.AddNotification(new Notification()
             {
                 Title = "SSMinionBoradcast",
