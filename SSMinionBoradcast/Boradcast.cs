@@ -6,18 +6,22 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace SSMinionBoradcast
 {
-    public static class Boradcast
+    public static partial class Boradcast
     {
+        private static readonly Regex FlagRegex = MapLinkRegex();
+
         public static unsafe void ProcessData(bool send)
         {
             Data.currMacro.Clear();
             if (Data.SSMinion.TryGetValue(GameMain.Instance()->CurrentTerritoryTypeId, out var ssminionlist))
             {
+                if (ssminionlist.Length < 4)
+                    return;
+
                 var mapName = Svc.Data.GetExcelSheet<TerritoryType>().GetRow(GameMain.Instance()->CurrentTerritoryTypeId).PlaceName.Value.Name.ExtractText();
                 var instance = GetCharacterForInstanceNumber(UIState.Instance()->PublicInstance.InstanceId);
                 var waypoint = new Dictionary<string, string>
@@ -52,18 +56,16 @@ namespace SSMinionBoradcast
 
         private static string ProcessMacro(string macro, Dictionary<string, string> waypoint)
         {
-            var pattern = string.Join("|", waypoint.Keys.Select(Regex.Escape));
-            var regex = new Regex(pattern);
-            var result = regex.Replace(macro, match => waypoint[match.Value]);
-            return result;
+            return FlagRegex.Replace(macro, match => waypoint.TryGetValue(match.Value, out var val) ? val : match.Value);
         }
 
         public static void SendMessage(List<string> macro)
         {
             Chat.SendMessage("/mcancel");
 
-            macro.Insert(0, "/mlock");
-            MacroManager.Execute(macro);
+            var toSend = new List<string>(macro);
+            toSend.Insert(0, "/mlock");
+            MacroManager.Execute(toSend);
             Svc.NotificationManager.AddNotification(new Notification()
             {
                 Title = "SSMinionBoradcast",
@@ -71,5 +73,8 @@ namespace SSMinionBoradcast
                 Type = NotificationType.Success
             });
         }
+
+        [GeneratedRegex(@"<flag[1-4]>", RegexOptions.Compiled)]
+        private static partial Regex MapLinkRegex();
     }
 }
