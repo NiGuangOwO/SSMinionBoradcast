@@ -5,6 +5,7 @@ using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 using ECommons.DalamudServices;
+using ECommons.ImGuiMethods;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace SSMinionBoradcast.Windows
         public ConfigWindow() : base("SSMinionBoradcast设置")
         {
             var count = 0;
-            foreach (var item in Enum.GetValues(typeof(SeIconChar)))
+            foreach (var item in Enum.GetValues<SeIconChar>())
             {
                 SeIconChar += $"{((SeIconChar)(int)item).ToIconChar()}";
                 count++;
@@ -36,6 +37,11 @@ namespace SSMinionBoradcast.Windows
 
         public override void Draw()
         {
+            if (ImGui.Button("打开主窗口"))
+            {
+                Plugin.MainWindow.IsOpen = true;
+            }
+
             ImGui.Checkbox("启用自动播报", ref Plugin.Configuration.AutoBoradcast);
             if (ImGui.IsItemHovered())
             {
@@ -163,22 +169,7 @@ namespace SSMinionBoradcast.Windows
 
             ImGui.Separator();
             ImGui.Text("游戏内特殊标志（可复制）");
-            ImGui.InputTextMultiline("", ref SeIconChar, SeIconChar.Length, new System.Numerics.Vector2(-1, -1), flags: ImGuiInputTextFlags.ReadOnly | ImGuiInputTextFlags.CallbackResize);
-#if DEBUG
-            if (ImGui.CollapsingHeader("Debug"))
-            {
-                foreach (var item in Data.SSMinion)
-                {
-                    if (ImGui.CollapsingHeader($"TerritoryType:{item.Key}"))
-                    {
-                        foreach (var item1 in item.Value)
-                        {
-                            ImGui.Text($"({item1.X}, {item1.Y})");
-                        }
-                    }
-                }
-            }
-#endif
+            ImGui.InputTextMultiline("", ref SeIconChar, SeIconChar.Length, new System.Numerics.Vector2(-1, 200f.Scale()), flags: ImGuiInputTextFlags.ReadOnly | ImGuiInputTextFlags.CallbackResize);
         }
 
         public static void AddTemplateMacro()
