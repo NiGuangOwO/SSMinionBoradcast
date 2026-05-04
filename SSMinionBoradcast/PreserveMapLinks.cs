@@ -1,4 +1,4 @@
-using Dalamud.Game.Text;
+using Dalamud.Game.Chat;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Hooking;
@@ -13,7 +13,7 @@ using System.Text.RegularExpressions;
 
 namespace SSMinionBoradcast;
 
-public unsafe partial class CoordsToMapLink
+public partial class CoordsToMapLink
 {
     [UnmanagedFunctionPointer(CallingConvention.ThisCall)]
     private delegate nint ParseMessageDelegate(nint a, nint b);
@@ -52,8 +52,7 @@ public unsafe partial class CoordsToMapLink
         {
             var pMessage = Marshal.ReadIntPtr(ret);
             var length = 0;
-            while (Marshal.ReadByte(pMessage, length) != 0)
-                length++;
+            while (Marshal.ReadByte(pMessage, length) != 0) length++;
             var message = new byte[length];
             Marshal.Copy(pMessage, message, 0, length);
 
@@ -68,11 +67,9 @@ public unsafe partial class CoordsToMapLink
             }
             for (var i = 0; i < parsed.Payloads.Count; i++)
             {
-                if (parsed.Payloads[i] is not TextPayload payload || payload.Text is null)
-                    continue;
+                if (parsed.Payloads[i] is not TextPayload payload || payload.Text is null) continue;
                 var match = mapLinkPattern.Match(payload.Text);
-                if (!match.Success)
-                    continue;
+                if (!match.Success) continue;
 
                 var mapName = match.Groups["map"].Value;
                 if (unmaskedMapNames.TryGetValue(mapName, out var value))
@@ -142,23 +139,20 @@ public unsafe partial class CoordsToMapLink
         return ret;
     }
 
-    private void HandleChatMessage(XivChatType type, int senderId, ref SeString sender, ref SeString message, ref bool isHandled)
+    private void HandleChatMessage(IHandleableChatMessage handler)
     {
         try
         {
-            for (var i = 0; i < message.Payloads.Count; i++)
+            for (var i = 0; i < handler.Message.Payloads.Count; i++)
             {
-                if (message.Payloads[i] is not MapLinkPayload payload)
-                    continue;
-                if (message.Payloads[i + 6] is not TextPayload payloadText)
-                    continue;
+                if (handler.Message.Payloads[i] is not MapLinkPayload payload) continue;
+                if (handler.Message.Payloads[i + 6] is not TextPayload payloadText) continue;
+                if (territoryTypeIdField?.GetValue(payload) is not uint { } territoryId) continue;
+                if (mapIdField?.GetValue(payload) is not uint { } mapId) continue;
 
-                var territoryId = (uint)territoryTypeIdField.GetValue(payload);
-                var mapId = (uint)mapIdField.GetValue(payload);
-                var historyKey = payloadText.Text[..(payloadText.Text.LastIndexOf(')') + 1)];
+                var historyKey = payloadText.Text![..(payloadText.Text!.LastIndexOf(')') + 1)];
                 var mapName = historyKey[..(historyKey.LastIndexOf('(') - 1)];
-                if (mapName.Length == 0)
-                    continue;
+                if (mapName.Length == 0) continue;
                 if (mapName[^1] is >= '\ue0b1' and <= '\ue0b9')
                 {
                     maps[mapName[0..^1]] = (territoryId, mapId);
@@ -190,7 +184,7 @@ public unsafe partial class CoordsToMapLink
 
     public void Enable()
     {
-        parseMessageHook ??= Svc.Hook.HookFromSignature<ParseMessageDelegate>("E8 ?? ?? ?? ?? 48 8B D0 48 8D 4D D0 E8 ?? ?? ?? ?? 49 8B 07", new(HandleParseMessageDetour));
+        parseMessageHook ??= Svc.Hook.HookFromSignature<ParseMessageDelegate>("E8 ?? ?? ?? ?? 48 8B D0 48 8D 4C 24 ?? E8 ?? ?? ?? ?? 48 8B 44 24 ?? 48 8B CE", new(HandleParseMessageDetour));
         parseMessageHook?.Enable();
 
         foreach (var territoryType in Svc.Data.GetExcelSheet<TerritoryType>())
@@ -207,8 +201,8 @@ public unsafe partial class CoordsToMapLink
 
     public void Dispose()
     {
-        Svc.Chat.ChatMessage -= HandleChatMessage;
         parseMessageHook?.Dispose();
+        Svc.Chat.ChatMessage -= HandleChatMessage;
     }
 }
 
