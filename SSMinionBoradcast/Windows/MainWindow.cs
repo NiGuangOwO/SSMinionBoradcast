@@ -9,7 +9,10 @@ using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Windowing;
 using ECommons.Automation;
 using ECommons.DalamudServices;
+using Lumina.Excel.Sheets;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 
 namespace SSMinionBoradcast.Windows;
