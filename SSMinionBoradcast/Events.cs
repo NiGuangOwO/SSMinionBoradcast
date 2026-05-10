@@ -9,18 +9,14 @@ namespace SSMinionBoradcast
     {
         public static void Enable()
         {
+            Svc.Chat.LogMessage += Chat_LogMessage;
             Svc.Chat.ChatMessage += Chat_ChatMessage;
             Svc.ClientState.TerritoryChanged += ClientState_TerritoryChanged;
         }
 
-        private static void ClientState_TerritoryChanged(uint obj)
+        private static void Chat_LogMessage(ILogMessage message)
         {
-            Plugin.MainWindow.IsOpen = false;
-        }
-
-        private static void Chat_ChatMessage(IHandleableChatMessage message)
-        {
-            if ((int)message.LogKind == 2105 && message.Message.TextValue.Contains("特殊恶名精英的手下开始了侦察活动"))
+            if (message.LogMessageId == 9332)
             {
                 Svc.NotificationManager.AddNotification(new Notification()
                 {
@@ -31,7 +27,15 @@ namespace SSMinionBoradcast
                 Plugin.MainWindow.IsOpen = true;
                 Boradcast.ProcessData(Plugin.Configuration.AutoBoradcast);
             }
+        }
 
+        private static void ClientState_TerritoryChanged(uint obj)
+        {
+            Plugin.MainWindow.IsOpen = false;
+        }
+
+        private static void Chat_ChatMessage(IHandleableChatMessage message)
+        {
             if (message.LogKind == XivChatType.Echo && message.Message.TextValue == "test" && Svc.ClientState.TerritoryType == 1055)
             {
                 Svc.NotificationManager.AddNotification(new Notification()
@@ -47,6 +51,7 @@ namespace SSMinionBoradcast
 
         public static void Disable()
         {
+            Svc.Chat.LogMessage -= Chat_LogMessage;
             Svc.Chat.ChatMessage -= Chat_ChatMessage;
             Svc.ClientState.TerritoryChanged -= ClientState_TerritoryChanged;
         }

@@ -1,8 +1,3 @@
-#if DEBUG
-using Lumina.Excel.Sheets;
-using System.Collections.Generic;
-using System.Linq;
-#endif
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.ImGuiNotification;
@@ -75,6 +70,7 @@ public class MainWindow : Window
             });
         }
 
+#if DEBUG
         // ── 测试功能 ──
         ImGui.Separator();
         ImGui.TextColored(ImGuiColors.DalamudYellow, "地图喊话测试（/e 默语频道）");
@@ -121,6 +117,7 @@ public class MainWindow : Window
                 }
             }
         }
+#endif
 
         // ── 当前宏列表预览 ──
         ImGui.Separator();

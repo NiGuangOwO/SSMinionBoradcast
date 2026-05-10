@@ -37,10 +37,12 @@ namespace SSMinionBoradcast.Windows
 
         public override void Draw()
         {
+#if DEBUG
             if (ImGui.Button("打开主窗口"))
             {
                 Plugin.MainWindow.IsOpen = true;
             }
+#endif
 
             ImGui.Checkbox("启用自动播报", ref Plugin.Configuration.AutoBoradcast);
             if (ImGui.IsItemHovered())
@@ -50,7 +52,7 @@ namespace SSMinionBoradcast.Windows
 
             ImGui.Text("播报宏列表");
             ImGui.SameLine();
-            if (ImGui.Button("添加模板宏") && Plugin.Configuration.Macro.Count < 8)
+            if (ImGui.Button("使用模板宏"))
             {
                 AddTemplateMacro();
             }
@@ -174,8 +176,11 @@ namespace SSMinionBoradcast.Windows
 
         public static void AddTemplateMacro()
         {
-            Plugin.Configuration.Macro.Add("/sh 级恶名精英已触发，小怪请在五分钟内建立仇恨，请在人数足够时再开怪，开怪后请勿拉脱！开怪后请勿拉脱！开怪后请勿拉脱！<wait.2>");
-            Plugin.Configuration.Macro.Add("/sh 本图级恶名精英已触发，请前往以下位置=>击杀前置小怪 <wait.2>");
+            Plugin.Configuration.Macro.Clear();
+            Plugin.Configuration.Macro.Add("/sh 级恶名精英已触发，前置小怪请在周围玩家足够时再开怪，开怪后请勿拉脱！开怪后请勿拉脱！开怪后请勿拉脱！");
+            Plugin.Configuration.Macro.Add("/y 级恶名精英已触发，前置小怪请在周围玩家足够时再开怪，开怪后请勿拉脱！开怪后请勿拉脱！开怪后请勿拉脱！<wait.2>");
+            Plugin.Configuration.Macro.Add("/sh 本图级恶名精英已触发，请前往以下位置=>击杀前置小怪");
+            Plugin.Configuration.Macro.Add("/y 本图级恶名精英已触发，请前往以下位置=>击杀前置小怪 <wait.2>");
             Plugin.Configuration.Macro.Add("/sh ■■■1号■■■<flag1> <wait.2>");
             Plugin.Configuration.Macro.Add("/sh ■■■2号■■■<flag2> <wait.2>");
             Plugin.Configuration.Macro.Add("/sh ■■■3号■■■<flag3> <wait.2>");
