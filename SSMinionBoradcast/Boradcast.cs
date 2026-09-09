@@ -4,9 +4,14 @@ using ECommons.Automation;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using FFXIVClientStructs.FFXIV.Client.UI.Misc;
+using FFXIVClientStructs.FFXIV.Client.UI.Shell;
 using Lumina.Excel.Sheets;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace SSMinionBoradcast
@@ -72,7 +77,7 @@ namespace SSMinionBoradcast
                 toSend.Add(ReplaceChannelWithEcho(macro));
             }
             toSend.Insert(0, "/mlock");
-            MacroManager.Execute(toSend);
+            ExecuteMacroNoFree(toSend);
 
             var mapName = Svc.Data.GetExcelSheet<TerritoryType>().GetRow(territoryTypeId)
                 .PlaceName.Value.Name.ExtractText();
@@ -80,6 +85,47 @@ namespace SSMinionBoradcast
             {
                 Title = "SSMinionBoradcast 测试",
                 Content = $"测试喊话已发送（默语频道）— {mapName}",
+                Type = NotificationType.Success,
+            });
+        }
+
+        /// <summary>单独发送一个点位（pointIndex 0-3）的坐标喊话，使用配置宏中含对应 &lt;flagN&gt; 的行</summary>
+        public static unsafe void SendSinglePoint(int pointIndex)
+        {
+            var tid = GameMain.Instance()->CurrentTerritoryTypeId;
+            if (!Data.SSMinion.TryGetValue(tid, out var ssminionlist) || pointIndex >= ssminionlist.Length)
+            {
+                Svc.Log.Error($"当前地图不存在SS小怪点位{pointIndex + 1}！TerritoryTypeId={tid}");
+                return;
+            }
+
+            var flag = $"<flag{pointIndex + 1}>";
+            var configIdx = Plugin.Configuration.Macro.FindIndex(m => m.Contains(flag));
+            if (configIdx < 0)
+            {
+                Svc.NotificationManager.AddNotification(new Notification()
+                {
+                    Title = "SSMinionBoradcast",
+                    Content = $"宏模板中未找到 {flag}，无法单独发送{pointIndex + 1}号点位",
+                    Type = NotificationType.Error,
+                });
+                return;
+            }
+
+            var mapName = Svc.Data.GetExcelSheet<TerritoryType>().GetRow(tid).PlaceName.Value.Name.ExtractText();
+            var instance = GetCharacterForInstanceNumber(UIState.Instance()->PublicInstance.InstanceId);
+            var coord = ssminionlist[pointIndex];
+            var coordText = $"{mapName}{instance} ( {coord.X:F1}  , {coord.Y:F1} )";
+            var line = ProcessMacro(Plugin.Configuration.Macro[configIdx],
+                new Dictionary<string, string> { { flag, coordText } });
+
+            Chat.SendMessage("/mcancel");
+            ExecuteMacroNoFree(["/mlock", line]);
+
+            Svc.NotificationManager.AddNotification(new Notification()
+            {
+                Title = "SSMinionBoradcast",
+                Content = $"已发送{pointIndex + 1}号点位：{coordText}",
                 Type = NotificationType.Success,
             });
         }
@@ -131,13 +177,39 @@ namespace SSMinionBoradcast
 
             var toSend = new List<string>(macro);
             toSend.Insert(0, "/mlock");
-            MacroManager.Execute(toSend);
+            ExecuteMacroNoFree(toSend);
             Svc.NotificationManager.AddNotification(new Notification()
             {
                 Title = "SSMinionBoradcast",
                 Content = "开始发送喊话宏",
                 Type = NotificationType.Success
             });
+        }
+
+        /// <summary>
+        /// Execute a fake macro without freeing it. ECommons MacroManager frees the
+        /// macro struct and long-line heap buffers immediately after ExecuteMacro
+        /// returns, but the shell keeps executing lines across frames (waits span
+        /// seconds); the late reads hit freed memory and lines turn into garbled
+        /// commands. Leak the block instead (a few KB per broadcast; the game never
+        /// frees caller-provided macros — real macros live in RaptureMacroModule).
+        /// </summary>
+        private static unsafe void ExecuteMacroNoFree(IReadOnlyList<string> commands)
+        {
+            // ECommons Macro is marked obsolete in favor of the game struct, but the
+            // game struct cannot be constructed from managed strings this easily.
+#pragma warning disable CS0618
+            if (commands.Count > Macro.numLines)
+                throw new InvalidOperationException("Macro was more than 15 lines!");
+            if (commands.Any(x => x.Length > 180))
+                throw new InvalidOperationException("Macro contained lines more than 180 symbols!");
+
+            var macroPtr = Marshal.AllocHGlobal(Macro.size);
+            var macro = new Macro(macroPtr, string.Empty, commands);
+            Marshal.StructureToPtr(macro, macroPtr, false);
+            RaptureShellModule.Instance()->ExecuteMacro((RaptureMacroModule.Macro*)macroPtr);
+#pragma warning restore CS0618
+            // deliberately no FreeHGlobal / Dispose here — see summary above
         }
 
         [GeneratedRegex(@"<flag[1-4]>", RegexOptions.Compiled)]

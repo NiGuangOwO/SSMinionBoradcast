@@ -19,6 +19,18 @@ public partial class CoordsToMapLink
     private delegate nint ParseMessageDelegate(nint a, nint b);
     private Hook<ParseMessageDelegate>? parseMessageHook;
 
+    // Utf8String::resize (reverse-engineered, game 2026.09.01 @ RVA 0x8C830):
+    // grows the buffer to a 32-byte-aligned capacity when newLength exceeds it,
+    // copies old content and updates {+0 data, +8 capacity, +0x10 length}.
+    // flag=0 keeps the +0x20 flag byte untouched.
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate void GrowStringDelegate(nint str, ulong newLength, byte flag);
+    private GrowStringDelegate? growString;
+
+    // Unique signature of GrowString (verified against ffxiv_dx11.exe 2026.09.01).
+    private const string GrowStringSignature =
+        "40 53 56 57 48 83 EC 30 48 8B FA 48 8B D9 45 84 C0 74 04 C6 41 20 00 48 8B 71 08 48 3B FE 0F 86 ?? ?? ?? ??";
+
     private readonly Dictionary<string, (uint, uint)> maps = [];
     private readonly Dictionary<string, string> unmaskedMapNames = new()
 {
@@ -52,7 +64,8 @@ public partial class CoordsToMapLink
         {
             var pMessage = Marshal.ReadIntPtr(ret);
             var length = 0;
-            while (Marshal.ReadByte(pMessage, length) != 0) length++;
+            while (Marshal.ReadByte(pMessage, length) != 0)
+                length++;
             var message = new byte[length];
             Marshal.Copy(pMessage, message, 0, length);
 
@@ -67,9 +80,11 @@ public partial class CoordsToMapLink
             }
             for (var i = 0; i < parsed.Payloads.Count; i++)
             {
-                if (parsed.Payloads[i] is not TextPayload payload || payload.Text is null) continue;
+                if (parsed.Payloads[i] is not TextPayload payload || payload.Text is null)
+                    continue;
                 var match = mapLinkPattern.Match(payload.Text);
-                if (!match.Success) continue;
+                if (!match.Success)
+                    continue;
 
                 var mapName = match.Groups["map"].Value;
                 if (unmaskedMapNames.TryGetValue(mapName, out var value))
@@ -121,14 +136,22 @@ public partial class CoordsToMapLink
                 var messageCapacity = Marshal.ReadInt64(ret + 8);
                 if (newMessage.Length + 1 > messageCapacity)
                 {
-                    // FIXME: should call std::string#resize(or maybe _Reallocate_grow_by) here, but haven't found the signature yet
-                    Svc.Log.Info($"Reached message capacity. Aborting conversion for {historyKey}");
-                    return ret;
+                    if (growString == null)
+                    {
+                        Svc.Log.Warning($"Reached message capacity ({newMessage.Length + 1} > {messageCapacity}) and GrowString unavailable. Aborting conversion for {historyKey}");
+                        return ret;
+                    }
+                    // Reallocation invalidates the data pointer; re-read it below.
+                    growString(ret, (ulong)(newMessage.Length + 1), 0);
+                    Svc.Log.Info($"[MapLink] grew buffer {messageCapacity} -> {Marshal.ReadInt64(ret + 8)} for {historyKey}");
                 }
+                pMessage = Marshal.ReadIntPtr(ret);
                 Marshal.WriteInt64(ret + 16, newMessage.Length + 1);
                 Marshal.Copy(newMessage, 0, pMessage, newMessage.Length);
                 Marshal.WriteByte(pMessage, newMessage.Length, 0x00);
+                Svc.Log.Info($"[MapLink] converted {historyKey}, size {newMessage.Length + 1}/{Marshal.ReadInt64(ret + 8)}");
 
+                // one coordinate per message: stop after the first conversion
                 break;
             }
         }
@@ -145,14 +168,19 @@ public partial class CoordsToMapLink
         {
             for (var i = 0; i < handler.Message.Payloads.Count; i++)
             {
-                if (handler.Message.Payloads[i] is not MapLinkPayload payload) continue;
-                if (handler.Message.Payloads[i + 6] is not TextPayload payloadText) continue;
-                if (territoryTypeIdField?.GetValue(payload) is not uint { } territoryId) continue;
-                if (mapIdField?.GetValue(payload) is not uint { } mapId) continue;
+                if (handler.Message.Payloads[i] is not MapLinkPayload payload)
+                    continue;
+                if (handler.Message.Payloads[i + 6] is not TextPayload payloadText)
+                    continue;
+                if (territoryTypeIdField?.GetValue(payload) is not uint { } territoryId)
+                    continue;
+                if (mapIdField?.GetValue(payload) is not uint { } mapId)
+                    continue;
 
                 var historyKey = payloadText.Text![..(payloadText.Text!.LastIndexOf(')') + 1)];
                 var mapName = historyKey[..(historyKey.LastIndexOf('(') - 1)];
-                if (mapName.Length == 0) continue;
+                if (mapName.Length == 0)
+                    continue;
                 if (mapName[^1] is >= '\ue0b1' and <= '\ue0b9')
                 {
                     maps[mapName[0..^1]] = (territoryId, mapId);
@@ -184,8 +212,21 @@ public partial class CoordsToMapLink
 
     public void Enable()
     {
+        Svc.Log.Info("[MapLink] enabling hook (build 2026-09-08b: wait-directive warmup fix + GrowString)");
         parseMessageHook ??= Svc.Hook.HookFromSignature<ParseMessageDelegate>("E8 ?? ?? ?? ?? 48 8B D0 48 8D 4C 24 ?? E8 ?? ?? ?? ?? 48 8B 44 24 ?? 48 8B CE", new(HandleParseMessageDetour));
         parseMessageHook?.Enable();
+
+        try
+        {
+            var pGrow = Svc.SigScanner.ScanText(GrowStringSignature);
+            growString = Marshal.GetDelegateForFunctionPointer<GrowStringDelegate>(pGrow);
+            Svc.Log.Info($"[MapLink] GrowString resolved at 0x{pGrow:X}");
+        }
+        catch (Exception ex)
+        {
+            growString = null;
+            Svc.Log.Warning($"[MapLink] GrowString signature not found ({ex.Message}); capacity overflow will abort conversion");
+        }
 
         foreach (var territoryType in Svc.Data.GetExcelSheet<TerritoryType>())
         {

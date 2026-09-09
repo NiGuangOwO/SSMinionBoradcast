@@ -7,7 +7,6 @@ using Dalamud.Utility;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace SSMinionBoradcast.Windows
@@ -29,11 +28,15 @@ namespace SSMinionBoradcast.Windows
             }
         }
 
-        private static int SelectedItemIndex = -1;
-        private static string EditMacro = string.Empty;
         private static string NewMacro = string.Empty;
-        private bool showError = false;
         private static string SeIconChar = string.Empty;
+        private bool showError = false;
+
+        /// <summary>假宏上限 15 行，减去自动插入的 /mlock 后配置宏最多 14 行</summary>
+        private const int MaxMacroLines = 14;
+
+        /// <summary>单行宏的长度上限，超过后 ExecuteMacroNoFree 会拒绝发送</summary>
+        private const int MaxLineLength = 180;
 
         public override void Draw()
         {
@@ -60,93 +63,104 @@ namespace SSMinionBoradcast.Windows
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             if (ImGui.BeginListBox("##宏列表"))
             {
-                for (var i = 0; i < Plugin.Configuration.Macro.Count; i++)
+                var macros = Plugin.Configuration.Macro;
+                for (var i = 0; i < macros.Count; i++)
                 {
-                    if (SelectedItemIndex != i)
-                    {
-                        if (ImGui.Button($"删除##{i}"))
-                        {
-                            Plugin.Configuration.Macro.RemoveAt(i);
-                            continue;
-                        }
-                        ImGui.SameLine();
+                    // 直接编辑：每行常驻输入框，改动即时写回配置，无需进入编辑态/点保存
+                    var line = macros[i];
 
-                        ImGui.Text($"{Plugin.Configuration.Macro[i]}");
-                        if (ImGui.IsItemClicked())
-                        {
-                            SelectedItemIndex = i;
-                            EditMacro = Plugin.Configuration.Macro[i];
-                        }
+                    if (i > 0)
+                    {
+                        if (ImGui.Button($"△##{i}"))
+                            (macros[i - 1], macros[i]) = (macros[i], macros[i - 1]);
                     }
                     else
                     {
-                        ImGui.InputText($"##Edit{i}", ref EditMacro, 1000);
-                        ImGui.SameLine();
+                        ImGui.BeginDisabled();
+                        ImGui.Button($"△##{i}");
+                        ImGui.EndDisabled();
+                    }
 
-                        if (i > 0)
-                        {
-                            if (ImGui.Button($"△##{i}"))
-                            {
-                                Plugin.Configuration.Macro[i] = EditMacro;
-                                (Plugin.Configuration.Macro[i - 1], Plugin.Configuration.Macro[i]) = (Plugin.Configuration.Macro[i], Plugin.Configuration.Macro[i - 1]);
-                                SelectedItemIndex = -1;
-                            }
-                            ImGui.SameLine();
-                        }
+                    ImGui.SameLine();
+                    if (i < macros.Count - 1)
+                    {
+                        if (ImGui.Button($"▽##{i}"))
+                            (macros[i + 1], macros[i]) = (macros[i], macros[i + 1]);
+                    }
+                    else
+                    {
+                        ImGui.BeginDisabled();
+                        ImGui.Button($"▽##{i}");
+                        ImGui.EndDisabled();
+                    }
 
-                        if (i < Plugin.Configuration.Macro.Count - 1)
-                        {
-                            if (ImGui.Button($"▽##{i}"))
-                            {
-                                Plugin.Configuration.Macro[i] = EditMacro;
-                                (Plugin.Configuration.Macro[i + 1], Plugin.Configuration.Macro[i]) = (Plugin.Configuration.Macro[i], Plugin.Configuration.Macro[i + 1]);
-                                SelectedItemIndex = -1;
-                            }
-                        }
+                    ImGui.SameLine();
+                    if (ImGui.Button($"删##{i}"))
+                    {
+                        macros.RemoveAt(i);
+                        continue;
+                    }
 
-                        ImGui.SameLine();
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - 45f);
+                    if (ImGui.InputText($"##宏{i}", ref line, 500))
+                    {
+                        macros[i] = line;
+                    }
 
-                        if (ImGui.Button($"保存##{i}"))
-                        {
-                            Plugin.Configuration.Macro[i] = EditMacro;
-                            SelectedItemIndex = -1;
-                            EditMacro = "";
-                        }
-
-                        ImGui.SameLine();
-
-                        ImGui.Text($"{EditMacro.Length}");
+                    ImGui.SameLine();
+                    if (line.Length > MaxLineLength)
+                    {
+                        ImGui.TextColored(ImGuiColors.DalamudRed, $"{line.Length}");
+                        if (ImGui.IsItemHovered())
+                            ImGui.SetTooltip($"超过单行 {MaxLineLength} 字符，发送时会被拒绝");
+                    }
+                    else
+                    {
+                        ImGui.TextDisabled($"{line.Length}");
                     }
                 }
-                if (Plugin.Configuration.Macro.Count < 14)
+
+                if (macros.Count < MaxMacroLines)
                 {
-                    ImGui.InputText("##New", ref NewMacro, 1000);
+                    var submitted = ImGui.InputText("##New", ref NewMacro, 500, ImGuiInputTextFlags.EnterReturnsTrue);
                     ImGui.SameLine();
 
-                    if (NewMacro.IsNullOrEmpty())
+                    var canAdd = !NewMacro.IsNullOrEmpty();
+                    if (!canAdd)
                         ImGui.BeginDisabled();
-                    if (ImGui.Button("添加"))
+                    if ((ImGui.Button("添加") && canAdd) || (submitted && canAdd))
                     {
-                        Plugin.Configuration.Macro.Add(NewMacro);
+                        macros.Add(NewMacro);
                         NewMacro = "";
                     }
-                    if (NewMacro.IsNullOrEmpty())
+                    if (!canAdd)
                         ImGui.EndDisabled();
                 }
                 else
                 {
-                    ImGui.TextColored(ImGuiColors.DalamudRed, "宏数量已经到达上限");
+                    ImGui.TextColored(ImGuiColors.DalamudRed,
+                        $"宏数量已达到上限（{MaxMacroLines} 行 + 自动插入的 /mlock = 假宏 15 行上限）");
                 }
 
                 ImGui.EndListBox();
             }
 
-            ImGui.TextColored(ImGuiColors.DalamudYellow, "↓修改完记得点击保存！");
+            // ── 占位符覆盖状态（实时显示，不用点保存才发现缺） ──
+            ImGui.Text("占位符检查：");
+            for (var i = 1; i <= 4; i++)
+            {
+                ImGui.SameLine();
+                var has = Plugin.Configuration.Macro.Any(m => m.Contains($"<flag{i}>"));
+                ImGui.TextColored(has ? ImGuiColors.HealerGreen : ImGuiColors.DalamudRed,
+                    $"<flag{i}> {(has ? "✓" : "X缺失")}");
+            }
 
+            ImGui.TextColored(ImGuiColors.DalamudYellow, "↓修改完记得点击保存！");
             if (ImGui.Button("保存"))
             {
-                List<string> allflags = ["<flag1>", "<flag2>", "<flag3>", "<flag4>"];
-                var valid = allflags.All(flag => Plugin.Configuration.Macro.Any(macro => macro.Contains(flag)));
+                var valid = Enumerable.Range(1, 4)
+                    .All(i => Plugin.Configuration.Macro.Any(m => m.Contains($"<flag{i}>")));
                 if (valid)
                 {
                     showError = false;

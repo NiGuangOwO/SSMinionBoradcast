@@ -58,6 +58,23 @@ public class MainWindow : Window
         if (onCooldown)
             ImGui.EndDisabled();
 
+        // ── 单独发送单个点位坐标（带冷却） ──
+        ImGui.Text("单独发送点位坐标");
+        for (var i = 0; i < 4; i++)
+        {
+            if (i > 0)
+                ImGui.SameLine();
+            if (onCooldown)
+                ImGui.BeginDisabled();
+            if (ImGui.Button($"{i + 1}号点位"))
+            {
+                Boradcast.SendSinglePoint(i);
+                cooldownWatch.Restart();
+            }
+            if (onCooldown)
+                ImGui.EndDisabled();
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("中止喊话"))
         {
